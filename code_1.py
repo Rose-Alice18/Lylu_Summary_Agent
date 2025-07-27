@@ -728,6 +728,119 @@ if __name__ == "__main__":
 
 # In[ ]:
 
+#A funtion to take in audio file and then return summary.
 
 
+# Add this to the end of your Real_Deal.py file
 
+def audio_to_summary_simple(audio_file_path, assemblyai_api_key, openai_api_key):
+    """
+    Simple function to convert audio file to summary
+    """
+    try:
+        # Setup APIs
+        aai.settings.api_key = assemblyai_api_key
+        transcriber = aai.Transcriber()
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3, openai_api_key=openai_api_key)
+        
+        # Transcribe with speakers
+        config = aai.TranscriptionConfig(speaker_labels=True)
+        transcript = transcriber.transcribe(audio_file_path, config)
+        
+        if transcript.status == aai.TranscriptStatus.error:
+            return {"success": False, "error": f"Transcription failed: {transcript.error}"}
+        
+        # Format transcript with speakers
+        formatted_transcript = ""
+        if transcript.utterances:
+            for utterance in transcript.utterances:
+                formatted_transcript += f"Speaker_{utterance.speaker}: {utterance.text}\n\n"
+        else:
+            formatted_transcript = f"Speaker_A: {transcript.text}\n\n"
+        
+        # Generate summary
+        system_msg = SystemMessage(content="""Create a structured summary with:
+- Conversation overview (speakers, type, context)
+- Key points and decisions
+- Action items and next steps  
+- Important details (names, dates, etc.)
+Format professionally with clear sections.""")
+        
+        user_msg = HumanMessage(content=f"Summarize this transcript:\n\n{formatted_transcript}")
+        summary = llm.invoke([system_msg, user_msg]).content
+        
+        return {
+            "success": True,
+            "summary": summary,
+            "transcript": formatted_transcript,
+            "error": None
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": str(e), "summary": None, "transcript": None}
+
+
+def test_simple_function():
+    """Test the simple audio to summary function"""
+    print("\n" + "="*60)
+    print("🧪 TESTING SIMPLE AUDIO TO SUMMARY FUNCTION")
+    print("="*60)
+    
+    # Test with an existing audio file (you'll need to provide the path)
+    test_audio_file = input("Enter path to test audio file (or press Enter to skip): ").strip()
+    
+    if not test_audio_file or not os.path.exists(test_audio_file):
+        print("❌ No valid audio file provided. Test skipped.")
+        return
+    
+    print(f"🎵 Testing with: {test_audio_file}")
+    
+    # Use your existing API keys
+    result = audio_to_summary_simple(test_audio_file, ASSEMBLYAI_API_KEY, OPENAI_API_KEY)
+    
+    print("\n" + "="*40)
+    print("📋 TEST RESULTS:")
+    print("="*40)
+    
+    if result["success"]:
+        print("✅ SUCCESS!")
+        print(f"\n📝 TRANSCRIPT:\n{'-'*30}")
+        print(result["transcript"])
+        print(f"\n📊 SUMMARY:\n{'-'*30}")
+        print(result["summary"])
+    else:
+        print("❌ FAILED!")
+        print(f"Error: {result['error']}")
+    
+    print("\n" + "="*60)
+
+
+# Modify your existing main function to include the test option
+def main_with_test():
+    """Main execution function with test option"""
+    print("🎵 ASSEMBLYAI SDK TRANSCRIPTION AGENT")
+    print("="*70)
+    print("Choose an option:")
+    print("1. Run full transcription workflow (original)")
+    print("2. Test simple audio-to-summary function")
+    print("="*70)
+    
+    choice = input("Enter choice (1 or 2): ").strip()
+    
+    if choice == "2":
+        test_simple_function()
+    else:
+        # Run your original main function
+        main()
+
+
+# Replace the bottom section of your file with this:
+if __name__ == "__main__":
+    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+    
+    # Use this for testing both functions
+    #main_with_test()
+    
+    # Or uncomment this to test just the simple function
+    test_simple_function()
+# %%
