@@ -1,0 +1,35 @@
+# app running command
+fastapi dev src
+
+#stop running the app:
+ctrl+c
+
+#access actual swagger
+localhost/donectBackend/docs
+
+#access redoc
+localhost/donectBackend/redoc
+
+========================Check if Port is Free========================
+# if app fails to run, the port may be in use
+# check for the process using the port (example for port 8000):
+
+# Linux/macOS
+lsof -i :8000
+
+# Windows
+netstat -ano | findstr :8000
+
+# then kill the process using its PID
+# Linux/macOS:
+kill -9 <PID>
+
+# Windows:
+taskkill /PID <PID> /F
+
+
+========================Troubleshooting========================
+# if app fails to run, check:
+- if correct path is used (e.g., src.main:app)
+- if FastAPI and Uvicorn are installed
+- if no port conflicts exist

@@ -1,0 +1,9 @@
+=================COMMAND TO RUN DOCKER REDIS================
+# Run the redis
+docker run --name my-redis -p 6379:6379 -d redis
+
+#check if it is running:
+docker ps
+
+#stop/end the running:
+docker stop my-redis

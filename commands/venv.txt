@@ -1,0 +1,38 @@
+================Virtual Environment====================
+
+# create a virtual environment named 'venv'
+python -m venv venv
+
+
+================Activate Virtual Environment====================
+# on Windows (Command Prompt)
+venv\Scripts\activate
+
+# on Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# on macOS/Linux
+source venv/bin/activate
+
+
+================Deactivate Virtual Environment====================
+# works the same on all systems
+deactivate
+
+
+================Useful Tips====================
+# check if you're inside a virtual environment
+# your terminal prompt will usually show (venv)
+# or run:
+where python          # Windows
+which python          # macOS/Linux
+
+# install dependencies inside the virtual environment only
+pip install package_name
+
+# save current environment packages
+pip freeze > requirements.txt
+
+# later, you can recreate the same environment using:
+pip install -r requirements.txt
+
