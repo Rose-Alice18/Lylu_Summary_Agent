@@ -1,0 +1,339 @@
+===========================Get from remote==========
+# fetch from remote:
+git pull origin online_branch
+
+# OR if the branch is not yet tracked locally
+git fetch origin
+git checkout -b online_branch origin/online_branch
+
+
+========================Send to remote=========
+# check the current status of local working directory
+git status
+
+# add changes to staging
+git add .
+
+# OR add specific files
+# git add filename.py
+
+# commit changes with a message
+git commit -m "your commit message"
+
+# push changes to the remote branch
+git push origin online_branch
+
+
+========================Branching=========
+# create a new branch
+git checkout -b feature_branch
+
+# switch to an existing branch
+git checkout feature_branch
+
+# push the new branch to remote
+git push -u origin feature_branch
+
+# list all branches (local and remote)
+git branch -a
+
+
+========================Merge Changes=========
+# switch to the branch you want to merge into (e.g., main)
+git checkout main
+
+# merge another branch into current one
+git merge feature_branch
+
+# push merged changes
+git push origin main
+
+
+========================Cloning Repo=========
+# clone a repository from GitHub
+git clone https://github.com/username/repo-name.git
+
+
+========================Undo/Reset=========
+# undo local changes to a file (not yet staged)
+git checkout -- filename.py
+
+# unstage a file
+git reset filename.py
+
+# reset to the last commit (dangerous, discards changes)
+git reset --hard
+
+
+========================Collaborate=========
+# see who made which changes
+git blame filename.py
+
+# view commit history
+git log
+
+# show commits with a graph and branches
+git log --oneline --graph --all --decorate
+
+
+========================Stash Work=========
+# temporarily save uncommitted changes
+git stash
+
+# apply stashed changes back
+git stash pop
+
+
+========================Tagging (optional)=========
+# create a tag for a release
+git tag v1.0.0
+
+# push tags to remote
+git push origin --tags
+
+========================Delete Branches Safely========================
+
+# delete a local branch (after merging or when no longer needed)
+git branch -d branch_name
+
+# force delete a local branch (use with caution)
+git branch -D branch_name
+
+# delete a remote branch (e.g., on GitHub)
+git push origin --delete branch_name
+
+# confirm current branch before deleting another
+git branch          # shows all local branches
+git branch -r       # shows all remote branches
+
+# example:
+git branch -d feature/signup-ui
+git push origin --delete feature/signup-ui
+
+========================Send a Pull Request (PR)========================
+
+# 1. Make sure your local branch is up to date with origin
+git pull origin main  # or 'develop' or whichever branch you're targeting
+
+# 2. Create a new branch for your feature/fix
+git checkout -b feature/your-feature-name
+
+# 3. Make your changes and commit them
+git add .
+git commit -m "Describe the change you made"
+
+# 4. Push your branch to the remote repository
+git push origin feature/your-feature-name
+
+# 5. Go to GitHub/GitLab and open a pull request
+# - Select the base branch (e.g., main or develop)
+# - Select your feature branch as the compare
+# - Add a descriptive title and summary of changes
+# - Submit the PR
+
+# 6. (Optional) Link issues, request reviewers, and follow up
+
+
+========================Navigate Git Logs========================
+
+# Basic log of commits (most recent at top)
+git log
+
+# Show a one-line summary per commit
+git log --oneline
+
+# Show the log as a visual tree (good for seeing branch merges)
+git log --oneline --graph --all --decorate
+
+# View commits that affected a specific file
+git log path/to/file.py
+
+# Show changes (diffs) in each commit
+git log -p
+
+# Limit the number of commits displayed
+git log -n 5
+
+# Show commits by a specific author
+git log --author="Your Name"
+
+# Search for a keyword in commit messages
+git log --grep="fix"          # commits with "fix" in message
+
+# See commits made since a specific date
+git log --since="2 weeks ago"
+git log --since="2024-01-01"
+
+# Show commits between two branches
+git log main..feature/login-form
+
+# View which commits introduced specific lines (blame)
+git blame path/to/file.py
+
+# Quit the log viewer (if stuck in the log view)
+Press `q`
+
+
+
+======================== Managing GitHub Issues ========================
+
+🔹 GitHub Issues are used to track bugs, feature requests, tasks, etc.
+🔹 This section guides you through local-to-remote issue handling using Git and GitHub.
+
+-----------------------------------------------------------------------
+# 1. Creating & Viewing Issues (Remote via GitHub UI)
+-----------------------------------------------------------------------
+- Go to your repo → Click on the "Issues" tab
+- Click "New issue"
+- Fill in title, description, and (optionally) assign labels, milestones, assignees
+
+-----------------------------------------------------------------------
+# 2. Create a Local Branch Tied to an Issue
+-----------------------------------------------------------------------
+# Naming convention: use the issue number in the branch name
+git checkout -b issue-23-fix-login
+
+-----------------------------------------------------------------------
+# 3. Commit Your Changes with Issue Link
+-----------------------------------------------------------------------
+git add .
+git commit -m "Fix login redirect logic - fixes #23"
+
+✅ Common keywords to automatically close issues:
+- `fixes #23`
+- `closes #23`
+- `resolves #23`
+
+👉 You can place them **anywhere** in the commit message or pull request description.
+
+Examples:
+- `"Fixes #23: add redirect after login"`
+- `"Update session handling. Closes #23"`
+- `"Resolves #23 – fixed bug with password reset"`
+
+✅ Case doesn't matter: `fixes`, `Fixes`, `CLOSES` all work.
+
+-----------------------------------------------------------------------
+# 4. Push the Branch to GitHub and Create a PR
+-----------------------------------------------------------------------
+git push origin issue-23-fix-login
+
+Then go to GitHub and:
+- Create a new Pull Request
+- Make sure the PR targets your main/develop branch
+- In the PR **description**, reference the issue:
+
+Example:
+This PR fixes the login redirect bug after password reset.
+Fixes #23
+
+
+✅ When the PR is merged, GitHub automatically closes the referenced issue.
+
+-----------------------------------------------------------------------
+# 5. (Optional) Use GitHub CLI for Issues
+-----------------------------------------------------------------------
+🔧 Install GitHub CLI: https://cli.github.com/
+
+# Login to GitHub CLI
+gh auth login
+
+# List open issues
+gh issue list
+
+# View a specific issue
+gh issue view 23
+
+# Create a new issue
+gh issue create --title "Bug: login fails on reset" --body "Steps to reproduce..."
+
+# Close an issue manually
+gh issue close 23
+
+-----------------------------------------------------------------------
+# 6. Deleting Branches After Issue Is Merged
+-----------------------------------------------------------------------
+
+# Delete the local branch
+git branch -d issue-23-fix-login
+
+# Delete the remote branch
+git push origin --delete issue-23-fix-login
+
+-----------------------------------------------------------------------
+✅ Best Practices
+-----------------------------------------------------------------------
+- Always link commits and PRs to issues
+- Use consistent branch names like `issue-23-fix-something`
+- Use meaningful commit messages with closing keywords
+- Clean up merged branches to keep your repo tidy
+- Avoid keeping unrelated code in issue-related branches
+
+
+======================== GitHub Milestones ========================
+
+🔹 A milestone is a collection of related issues and pull requests grouped together to track progress toward a larger goal.
+
+🎯 Use milestones to represent:
+- A version release (e.g., v1.0.0)
+- A deadline (e.g., June Sprint)
+- A specific project phase (e.g., Phase 1, Backend Complete)
+
+-----------------------------------------------------------------------
+# 1. Creating a Milestone (via GitHub UI)
+-----------------------------------------------------------------------
+- Go to your repository → Click on the "Issues" tab → Click "Milestones"
+- Click "New milestone"
+- Fill in:
+  • Title (e.g., v1.0.0)
+  • Description (optional, but helpful)
+  • Due date (optional)
+
+-----------------------------------------------------------------------
+# 2. Assigning a Milestone to Issues or Pull Requests
+-----------------------------------------------------------------------
+- While creating or editing an issue/PR:
+  • Use the sidebar to assign a milestone from the list
+
+- You can also reassign milestones later from the same sidebar
+
+-----------------------------------------------------------------------
+# 3. Viewing Milestone Progress
+-----------------------------------------------------------------------
+- Go to the "Milestones" tab under "Issues"
+- GitHub shows progress: ✓ closed vs. ✗ open issues/PRs
+- This helps track how far you are from reaching your goal
+
+-----------------------------------------------------------------------
+# 4. Common Use Cases
+-----------------------------------------------------------------------
+✅ `v1.0.0` - Group all issues/PRs required for the first release  
+✅ `Bug Fix Sprint` - Track critical bugs you're fixing this week  
+✅ `Backend Complete` - Group database & API tasks under one goal
+
+-----------------------------------------------------------------------
+# 5. Best Practices
+-----------------------------------------------------------------------
+- Keep milestones focused: group related tasks only
+- Set due dates to help track timelines
+- Use milestone progress as a team planning tool
+- Regularly review and close completed/abandoned milestones
+
+-----------------------------------------------------------------------
+# 6. Sample Workflow
+-----------------------------------------------------------------------
+1. Create milestone: "Dashboard Launch"
+2. Create issues:
+   • #21: Build UI layout
+   • #22: Connect to backend API
+   • #23: Write integration tests
+3. Assign all issues/PRs to the "Dashboard Launch" milestone
+4. Track progress and merge PRs as issues are closed
+5. Once all tasks are done → Close the milestone
+
+-----------------------------------------------------------------------
+# 7. CLI Note
+-----------------------------------------------------------------------
+🚫 `git` does not manage milestones  
+✅ Use GitHub web UI or GitHub CLI (with custom API requests)
+

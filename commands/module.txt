@@ -1,0 +1,33 @@
+========================Install Dependencies Manually========================
+# install each dependency manually (use when you don't have a requirements.txt)
+pip install fastapi bcrypt PyJWT sqlalchemy asyncpg redis cloudinary sqlmodel alembic
+
+
+========================Install from Requirements File========================
+# install all required packages and correct versions from a file
+pip install -r requirements.txt
+
+
+========================Save Dependencies to Requirements File========================
+# make sure you're in the root directory of the project
+# this will record all installed packages and their versions
+pip freeze > requirements.txt
+
+
+========================Update Dependencies========================
+# if you add a new package manually, don’t forget to update the requirements file
+pip freeze > requirements.txt
+
+
+========================Common Notes========================
+# to check what packages are installed
+pip list
+
+# to uninstall a package
+pip uninstall <package_name>
+
+# to install a specific version of a package
+pip install package_name==version
+
+# example:
+pip install fastapi==0.110.1
