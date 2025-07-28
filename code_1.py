@@ -44,8 +44,9 @@ if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY not found in environment variables")
 
 
-# Set up AssemblyAI
-aai.settings.api_key = ASSEMBLYAI_API_KEY
+# Set up AssemblyAI - LAZY LOADING
+# aai.settings.api_key = ASSEMBLYAI_API_KEY  # Moved to transcriber init
+
 
 # Audio configuration
 # SAMPLE_RATE = 16000
@@ -89,6 +90,8 @@ class AssemblyAITranscriber:
     """Transcriber using AssemblyAI SDK"""
 
     def __init__(self):
+        # Initialize AssemblyAI only when transcriber is created (lazy loading)
+        aai.settings.api_key = ASSEMBLYAI_API_KEY
         self.transcriber = aai.Transcriber()
 
     def transcribe_with_speakers(self, audio_file: str) -> tuple:
@@ -159,7 +162,6 @@ class AssemblyAITranscriber:
         except Exception as e:
             print(f"❌ Transcription error: {e}")
             return "", "", []
-
 
 # In[40]:
 
