@@ -12,11 +12,22 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional, TypedDict
 import uuid
-import numpy as np
 import tempfile
-import wave
 
-import sounddevice as sd
+# import numpy as np
+# import wave
+# import sounddevice as sd
+
+try:
+    import sounddevice as sd
+    import numpy as np 
+    import wave
+    AUDIO_RECORDING_AVAILABLE = True
+except ImportError:
+    # For deployment environments without audio hardware
+    AUDIO_RECORDING_AVAILABLE = False
+    print("⚠️ Audio recording not available in this environment")
+
 import assemblyai as aai
 
 from langchain_openai import ChatOpenAI
@@ -85,11 +96,16 @@ class AudioRecorder:
     """Reliable audio recorder for AssemblyAI"""
 
     def __init__(self):
+        if not AUDIO_RECORDING_AVAILABLE:
+            raise RuntimeError("Audio recording not available in this environment")
         self.is_recording = False
         self.audio_data = []
 
     def start_recording(self):
         """Start recording audio"""
+        if not AUDIO_RECORDING_AVAILABLE:
+            return False
+            
         self.is_recording = True
         self.audio_data = []
 
@@ -115,13 +131,16 @@ class AudioRecorder:
 
     def stop_recording(self):
         """Stop recording and create WAV file"""
+        if not AUDIO_RECORDING_AVAILABLE:
+            return None
+            
         self.is_recording = False
         if hasattr(self, 'stream'):
             self.stream.stop()
             self.stream.close()
 
         if not self.audio_data:
-            print(" No audio data recorded")
+            print("❌ No audio data recorded")
             return None
 
         # Combine all audio chunks
@@ -146,17 +165,15 @@ class AudioRecorder:
             file_size = os.path.getsize(temp_filename)
             duration = len(audio_int16) / SAMPLE_RATE
 
-            print(f" Audio saved: {temp_filename}")
-            print(f" File size: {file_size} bytes")
-            print(f" Duration: {duration:.1f} seconds")
+            print(f"✅ Audio saved: {temp_filename}")
+            print(f"📁 File size: {file_size} bytes")
+            print(f"⏱️ Duration: {duration:.1f} seconds")
 
             return temp_filename
 
         except Exception as e:
-            print(f"Failed to create WAV file: {e}")
+            print(f"❌ Failed to create WAV file: {e}")
             return None
-
-
 
 
 # In[39]:
@@ -244,10 +261,24 @@ class AssemblyAITranscriber:
 def record_audio(state: TranscriptionState) -> TranscriptionState:
     """Node: Record audio from microphone"""
 
+    if not AUDIO_RECORDING_AVAILABLE:
+        return {
+            **state,
+            "error_message": "Audio recording not available in deployment environment",
+            "processing_complete": True
+        }
+
     print("🎤 AUDIO RECORDING")
     print("="*50)
 
-    recorder = AudioRecorder()
+    try:
+        recorder = AudioRecorder()
+    except RuntimeError as e:
+        return {
+            **state,
+            "error_message": str(e),
+            "processing_complete": True
+        }
 
     # Start recording
     if not recorder.start_recording():
@@ -264,7 +295,7 @@ def record_audio(state: TranscriptionState) -> TranscriptionState:
     try:
         input()
     except KeyboardInterrupt:
-        print("\n Recording cancelled")
+        print("\n⚠️ Recording cancelled")
         return {
             **state,
             "error_message": "Recording cancelled by user",
@@ -288,6 +319,8 @@ def record_audio(state: TranscriptionState) -> TranscriptionState:
         "audio_file_path": audio_file,
         "error_message": None
     }
+
+
 
 
 # In[41]:
@@ -770,13 +803,16 @@ def main():
     print("🎵 ASSEMBLYAI SDK TRANSCRIPTION AGENT")
     print("="*70)
     print("Features:")
-    print("• Record audio from microphone")
+    if AUDIO_RECORDING_AVAILABLE:
+        print("• Record audio from microphone")
+    else:
+        print("• Record audio from microphone (NOT AVAILABLE)")
     print("• Professional speaker diarization")
     print("• High-accuracy transcription")
     print("• Detailed speaker analysis")
     print("• Automatic summary generation")
     print("• Structured report output")
-    print("• URL audio processing support")  # Added this feature
+    print("• URL audio processing support")
     print("="*70)
 
     # Verify API keys
@@ -791,20 +827,23 @@ def main():
 
     print("✅ API keys configured")
 
-    # Test audio devices
-    print("\n🎧 Available audio devices:")
-    try:
-        devices = sd.query_devices()
-        input_devices = [d for d in devices if d['max_input_channels'] > 0]
-        if input_devices:
-            for device in input_devices[:3]:
-                print(f"  ✓ {device['name']}")
-        else:
-            print("   ❌ No input devices found!")
+    # Test audio devices only if available
+    if AUDIO_RECORDING_AVAILABLE:
+        print("\n🎧 Available audio devices:")
+        try:
+            devices = sd.query_devices()
+            input_devices = [d for d in devices if d['max_input_channels'] > 0]
+            if input_devices:
+                for device in input_devices[:3]:
+                    print(f"  ✓ {device['name']}")
+            else:
+                print("   ❌ No input devices found!")
+                return
+        except Exception as e:
+            print(f"⚠️ Could not query audio devices: {e}")
             return
-    except Exception as e:
-        print(f"⚠️ Could not query audio devices: {e}")
-        return
+    else:
+        print("\n⚠️ Audio recording not available in this environment")
 
     # Initialize enhanced state for recording workflow
     initial_state = {
@@ -864,7 +903,6 @@ def main():
         print(f"\n❌ Unexpected error: {e}")
         import traceback
         traceback.print_exc()
-
 
 
 # In[46]:
