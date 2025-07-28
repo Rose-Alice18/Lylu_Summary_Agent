@@ -8,8 +8,7 @@
 
 
 import os
-import threading
-import time
+
 from datetime import datetime
 from typing import Dict, List, Optional, TypedDict
 import uuid
@@ -19,7 +18,7 @@ import wave
 
 import sounddevice as sd
 import assemblyai as aai
-from openai import OpenAI
+
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, END, START
@@ -346,7 +345,7 @@ def generate_summary(state: TranscriptionState) -> TranscriptionState:
         client = ChatOpenAI(
             model="gpt-4o-mini",
             temperature=0.3,
-            openai_api_key=OPENAI_API_KEY
+            api_key=OPENAI_API_KEY # type: ignore
         )
 
         transcript = state.get("final_transcript", "")
@@ -500,7 +499,7 @@ Create a structured report following the format specified in your instructions.
 
         return {
             **state,
-            "summary_report": summary_report,
+            "summary_report": str(summary_report) if not isinstance(summary_report, str) else summary_report,
             "processing_complete": True,
             "error_message": None
         }
@@ -589,7 +588,7 @@ def display_results(state: TranscriptionState) -> TranscriptionState:
             f.write("\n" + "="*60 + "\n")
             f.write("SUMMARY REPORT:\n")
             f.write("="*60 + "\n")
-            f.write(summary + "\n")
+            f.write(summary + "\n") # type: ignore
 
         print(f"\n Results saved to: {filename}")
 
@@ -659,10 +658,10 @@ def main():
     print("\n Available audio devices:")
     try:
         devices = sd.query_devices()
-        input_devices = [d for d in devices if d['max_input_channels'] > 0]
+        input_devices = [d for d in devices if d['max_input_channels'] > 0] # type: ignore
         if input_devices:
             for device in input_devices[:3]:
-                print(f"  ✓ {device['name']}")
+                print(f"  ✓ {device['name']}") # type: ignore
         else:
             print("   No input devices found!")
             return
@@ -686,7 +685,7 @@ def main():
     graph = create_transcription_graph()
 
     try:
-        final_state = graph.invoke(initial_state)
+        final_state = graph.invoke(initial_state) # type: ignore
 
         print("\n" + "="*60)
         if final_state.get("error_message"):
@@ -715,9 +714,9 @@ def main():
 # In[46]:
 
 
-if __name__ == "__main__":
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-    main()
+# if __name__ == "__main__":
+#     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+#     main()
 
 
 # In[1]:
@@ -741,14 +740,19 @@ def audio_to_summary_simple(audio_file_path, assemblyai_api_key, openai_api_key)
         # Setup APIs
         aai.settings.api_key = assemblyai_api_key
         transcriber = aai.Transcriber()
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3, openai_api_key=openai_api_key)
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3, api_key=openai_api_key)
         
         # Transcribe with speakers
         config = aai.TranscriptionConfig(speaker_labels=True)
         transcript = transcriber.transcribe(audio_file_path, config)
         
         if transcript.status == aai.TranscriptStatus.error:
-            return {"success": False, "error": f"Transcription failed: {transcript.error}"}
+            return {
+            "success": False,
+            "dev_message": f"Transcripting with speakers has an issue.",
+            "user_message":"Something unexpected happened. Try again",
+            "payload": {}, 
+        }
         
         # Format transcript with speakers
         formatted_transcript = ""
@@ -771,67 +775,84 @@ Format professionally with clear sections.""")
         
         return {
             "success": True,
-            "summary": summary,
-            "transcript": formatted_transcript,
-            "error": None
+            "dev_message": "Everything went well",
+            "user_message":"Your summary is ready",
+            "payload": {
+                "summary": summary,
+                "transcript": formatted_transcript,
+            },
+            
         }
         
     except Exception as e:
-        return {"success": False, "error": str(e), "summary": None, "transcript": None}
+        return {
+            "success": False,
+            "dev_message": f"There was an issue processing the audio: \nError message is: {e}",
+            "user_message":"Something unexpected happened. Try again",
+            "payload": {}, 
+        }
 
 
-def test_simple_function():
-    """Test the simple audio to summary function"""
-    print("\n" + "="*60)
-    print("🧪 TESTING SIMPLE AUDIO TO SUMMARY FUNCTION")
-    print("="*60)
+def process_audio(audio_path):
+    # """Test the simple audio to summary function"""
+    # print("\n" + "="*60)
+    # print("🧪 TESTING SIMPLE AUDIO TO SUMMARY FUNCTION")
+    # print("="*60)
     
     # Test with an existing audio file (you'll need to provide the path)
-    test_audio_file = input("Enter path to test audio file (or press Enter to skip): ").strip()
+    test_audio_file = audio_path
     
     if not test_audio_file or not os.path.exists(test_audio_file):
-        print("❌ No valid audio file provided. Test skipped.")
-        return
+        
+        return {
+            "success": False,
+            "dev_message": f"User did not provide a valid audio path",
+            "user_message":"Please provide a valid audio path",
+            "payload": {}, 
+        }
     
-    print(f"🎵 Testing with: {test_audio_file}")
+    print(f"Processing: {test_audio_file}")
     
     # Use your existing API keys
+    
     result = audio_to_summary_simple(test_audio_file, ASSEMBLYAI_API_KEY, OPENAI_API_KEY)
     
-    print("\n" + "="*40)
-    print("📋 TEST RESULTS:")
-    print("="*40)
+    return result
     
-    if result["success"]:
-        print("✅ SUCCESS!")
-        print(f"\n📝 TRANSCRIPT:\n{'-'*30}")
-        print(result["transcript"])
-        print(f"\n📊 SUMMARY:\n{'-'*30}")
-        print(result["summary"])
-    else:
-        print("❌ FAILED!")
-        print(f"Error: {result['error']}")
+    # print("\n" + "="*40)
+    # print("📋 TEST RESULTS:")
+    # print("="*40)
     
-    print("\n" + "="*60)
+    # if result["success"]:
+    #     print("✅ SUCCESS!")
+    #     print(f"\n📝 TRANSCRIPT:\n{'-'*30}")
+    #     print(result["transcript"])
+    #     print(f"\n📊 SUMMARY:\n{'-'*30}")
+    #     print(result["summary"])
+    # else:
+    #     print("❌ FAILED!")
+    #     print(f"Error: {result['error']}")
+    
+    # print("\n" + "="*60)
 
 
 # Modify your existing main function to include the test option
-def main_with_test():
-    """Main execution function with test option"""
-    print("🎵 ASSEMBLYAI SDK TRANSCRIPTION AGENT")
-    print("="*70)
-    print("Choose an option:")
-    print("1. Run full transcription workflow (original)")
-    print("2. Test simple audio-to-summary function")
-    print("="*70)
+# def main_with_test():
+#     """Main execution function with test option"""
+#     print("🎵 ASSEMBLYAI SDK TRANSCRIPTION AGENT")
+#     print("="*70)
+#     print("Choose an option:")
+#     print("1. Run full transcription workflow (original)")
+#     print("2. Test simple audio-to-summary function")
+#     print("="*70)
     
-    choice = input("Enter choice (1 or 2): ").strip()
+#     choice = input("Enter choice (1 or 2): ").strip()
     
-    if choice == "2":
-        test_simple_function()
-    else:
-        # Run your original main function
-        main()
+#     if choice == "2":
+#         test_simple_function()
+#     else:
+#         # Run your original main function
+#         main()
 
 
 # Replace the bottom section of your file with this:
@@ -842,5 +863,5 @@ if __name__ == "__main__":
     #main_with_test()
     
     # Or uncomment this to test just the simple function
-    test_simple_function()
+    # test_simple_function()
 # %%
