@@ -731,14 +731,6 @@ def process_audio(audio_input):
 #I need to add this to the end of the Real_Deal.py file
 
 
-
-# Replace the bottom section of your file with this:
-if __name__ == "__main__":
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-    
-    # Use this for testing both functions
-    #main_with_test()
-    
-    # Or uncomment this to test just the simple function
-    # test_simple_function()
-# %%
+# Remove this problematic code:
+# if __name__ == "__main__":
+#     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
