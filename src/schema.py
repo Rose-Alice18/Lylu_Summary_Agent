@@ -4,7 +4,8 @@ from pydantic import BaseModel
 class AudioInput(BaseModel):
     audio_path:str
     
-class AudioResponse(AudioInput):
+class AudioResponse(BaseModel):
+    success: bool
     dev_message:str
     user_message:str
     payload: Dict[str,Any]

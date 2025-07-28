@@ -9,5 +9,5 @@ app = FastAPI(title="Lylu Chat Agent",
 
 @app.post('/analyse_audio',response_model=AudioResponse)
 async def generate_summaray(audio_path:AudioInput):
-    result = process_audio(audio_path)
+    result = process_audio(audio_path.audio_path)
     return result
