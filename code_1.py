@@ -13,10 +13,10 @@ from typing import Dict, List, Optional, TypedDict
 import uuid
 import tempfile
 
-import assemblyai as aai
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import StateGraph, END, START
+# import assemblyai as aai
+# from langchain_openai import ChatOpenAI
+# from langchain_core.messages import HumanMessage, SystemMessage
+# from langgraph.graph import StateGraph, END, START
 
 import requests
 from urllib.parse import urlparse
@@ -47,11 +47,9 @@ if not OPENAI_API_KEY:
 # Set up AssemblyAI - LAZY LOADING
 # aai.settings.api_key = ASSEMBLYAI_API_KEY  # Moved to transcriber init
 
-
 # Audio configuration
 # SAMPLE_RATE = 16000
 # CHANNELS = 1
-
 
 # In[17]:
 
@@ -75,16 +73,9 @@ class TranscriptionState(TypedDict):
 
 # In[27]:
 
-
-
-
-#
-
-
-
+#Recording was here
 
 # In[39]:
-
 
 class AssemblyAITranscriber:
     """Transcriber using AssemblyAI SDK"""
@@ -165,123 +156,12 @@ class AssemblyAITranscriber:
 
 # In[40]:
 
-
 # def record_audio(state: TranscriptionState) -> TranscriptionState:
-#     """Node: Record audio from microphone"""
 
-#     if not AUDIO_RECORDING_AVAILABLE:
-#         return {
-#             **state,
-#             "error_message": "Audio recording not available in deployment environment",
-#             "processing_complete": True
-#         }
-
-#     print("🎤 AUDIO RECORDING")
-#     print("="*50)
-
-#     try:
-#         recorder = AudioRecorder()
-#     except RuntimeError as e:
-#         return {
-#             **state,
-#             "error_message": str(e),
-#             "processing_complete": True
-#         }
-
-#     # Start recording
-#     if not recorder.start_recording():
-#         return {
-#             **state,
-#             "error_message": "Failed to start audio recording",
-#             "processing_complete": True
-#         }
-
-#     print("🎙️ Recording in progress...")
-#     print("🔴 Press Enter when finished speaking")
-
-#     # Wait for user to press Enter
-#     try:
-#         input()
-#     except KeyboardInterrupt:
-#         print("\n⚠️ Recording cancelled")
-#         return {
-#             **state,
-#             "error_message": "Recording cancelled by user",
-#             "processing_complete": True
-#         }
-
-#     # Stop recording and save file
-#     audio_file = recorder.stop_recording()
-
-#     if not audio_file:
-#         return {
-#             **state,
-#             "error_message": "Failed to save audio recording",
-#             "processing_complete": True
-#         }
-
-#     print("✅ Recording completed and saved")
-
-#     return {
-#         **state,
-#         "audio_file_path": audio_file,
-#         "error_message": None
-#     }
-
-
-
-
-# # In[41]:
+#  In[41]:
 
 # # Fix the transcribe_with_speakers function - DON'T clean up temp file here
 # def transcribe_with_speakers(state: TranscriptionState) -> TranscriptionState:
-#     """Node: Transcribe audio with speaker diarization using AssemblyAI SDK"""
-
-#     if state.get("error_message"):
-#         return state
-
-#     audio_file = state.get("audio_file_path")
-#     if not audio_file:
-#         return {
-#             **state,
-#             "error_message": "No audio file available for transcription",
-#             "processing_complete": True
-#         }
-
-#     print("\n🎵 TRANSCRIPTION WITH SPEAKER DIARIZATION")
-#     print("="*50)
-
-#     transcriber = AssemblyAITranscriber()
-
-#     # Transcribe with speaker diarization
-#     raw_transcript, formatted_transcript, speaker_segments = transcriber.transcribe_with_speakers(audio_file)
-
-#     # DON'T clean up temp file here - it will be cleaned up in display_results_with_cleanup
-#     # Only clean up if it's NOT a temp file (i.e., it was a local file used for recording)
-#     if not state.get("is_temp_file"):
-#         try:
-#             os.unlink(audio_file)
-#             print("✅ Local recording file cleaned up")
-#         except:
-#             pass
-
-#     if not raw_transcript.strip():
-#         return {
-#             **state,
-#             "error_message": "No speech detected in audio",
-#             "processing_complete": True
-#         }
-
-#     print(f"\n✅ Transcription processing completed!")
-
-#     return {
-#         **state,
-#         "raw_transcript": raw_transcript,
-#         "final_transcript": formatted_transcript,
-#         "speaker_segments": speaker_segments,
-#         "error_message": None
-#     }
-
 
 # In[42]:
 
@@ -559,30 +439,6 @@ def generate_structured_summary(state: TranscriptionState) -> TranscriptionState
 def display_results_with_cleanup(state: TranscriptionState) -> TranscriptionState:
     """Node: Display final results and cleanup temp files"""
 
-    # print("\n" + "="*80)
-    # print("🎉 TRANSCRIPTION & SUMMARY COMPLETE")
-    # print("="*80)
-
-    # if state.get("error_message"):
-    #     print(f"❌ Error: {state['error_message']}")
-    #     return state
-
-    # # Display speaker information
-    # speaker_segments = state.get("speaker_segments", [])
-    # if speaker_segments:
-    #     unique_speakers = set(seg["speaker"] for seg in speaker_segments)
-    #     print(f"🎤 Speakers Detected: {len(unique_speakers)} ({', '.join(unique_speakers)})")
-    #     print(f"📝 Total Segments: {len(speaker_segments)}")
-
-    # # Display structured summary
-    # print(f"\n📋 SUMMARY RESULTS:")
-    # print("-" * 60)
-    # print(f"Title: {state.get('title', 'N/A')}")
-    # print(f"\nOverview:\n{state.get('overview', 'N/A')}")
-    # print(f"\nKey Points:\n{state.get('key_points', 'N/A')}")
-    # print(f"\nAction Items:\n{state.get('action_items', 'N/A')}")
-    # print(f"\nImportant Details:\n{state.get('important_details', 'N/A')}")
-
     # Cleanup temp file if needed
     if state.get("is_temp_file") and state.get("audio_file_path"):
         try:
@@ -598,9 +454,6 @@ def display_results_with_cleanup(state: TranscriptionState) -> TranscriptionStat
 
 
 # In[44]:
-
-
-
 
 def create_enhanced_transcription_graph():
     """Create the enhanced LangGraph workflow with URL support and structured output"""
@@ -621,7 +474,6 @@ def create_enhanced_transcription_graph():
     workflow.add_edge("display", END)
 
     return workflow.compile()
-
 
 
 # Replace your process_audio function with this enhanced version
@@ -728,11 +580,3 @@ def process_audio(audio_input):
 
 
 # In[ ]:
-
-#A funtion to take in audio file and then return summary.
-#I need to add this to the end of the Real_Deal.py file
-
-
-# Remove this problematic code:
-# if __name__ == "__main__":
-#     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
