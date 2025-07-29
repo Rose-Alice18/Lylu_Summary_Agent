@@ -13,10 +13,10 @@ from typing import Dict, List, Optional, TypedDict
 import uuid
 import tempfile
 
-# import assemblyai as aai
-# from langchain_openai import ChatOpenAI
-# from langchain_core.messages import HumanMessage, SystemMessage
-# from langgraph.graph import StateGraph, END, START
+import assemblyai as aai
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
+from langgraph.graph import StateGraph, END, START
 
 import requests
 from urllib.parse import urlparse
