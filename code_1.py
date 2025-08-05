@@ -536,11 +536,11 @@ def process_audio(audio_input):
                 "key_points": final_state.get("key_points", "No key points identified"),
                 "action_items": final_state.get("action_items", "No action items identified"),
                 "important_details": final_state.get("important_details", "No important details identified"),
-                "transcript": final_state.get("final_transcript", "No transcript available"),
+                #"transcript": final_state.get("final_transcript", "No transcript available"),
                 "metadata": {
                     "session_id": final_state.get("session_id"),
                     "speaker_count": speaker_count,
-                    "transcript_length": len(final_state.get("final_transcript", "")),
+                    #"transcript_length": len(final_state.get("final_transcript", "")),
                     "processing_timestamp": datetime.now().isoformat(),
                     "input_type": "url" if audio_input.startswith(('http', 'https')) else "local_file",
                     "original_input": audio_input
